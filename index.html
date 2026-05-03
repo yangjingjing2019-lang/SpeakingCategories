@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PSC 命題說話分類工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,155 +13,171 @@
             font-family: 'Noto Sans TC', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
+            margin: 0;
+            padding-bottom: 2rem;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* 擬真卡牌動畫 */
-        .card-container { perspective: 1500px; }
+        /* 頂部導航優化 */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            width: 100%;
+            z-index: 50;
+        }
+
+        /* 卡牌縮小優化 (手機端) */
+        .card-container { perspective: 1000px; }
         .card-inner {
-            transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
         }
         .is-flipped { transform: rotateY(180deg); }
         .card-face { 
             backface-visibility: hidden; 
-            border-radius: 2.5rem;
+            border-radius: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             position: absolute;
             inset: 0;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
-        .card-front-design { background: white; border: 10px solid #ffffff; }
+        .card-front-design { background: white; border: 6px solid #ffffff; }
         .card-back-design { 
             transform: rotateY(180deg); 
             background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-            border: 10px solid #ffffff;
+            border: 6px solid #ffffff;
         }
 
-        .mode-btn { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .mode-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.8); }
-        .mode-btn.active { border-bottom: 4px solid #3b82f6; background: white; }
+        /* 模式按鈕小巧化 */
+        .mode-btn { 
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s;
+            font-weight: 900;
+            color: #475569;
+        }
+        .mode-btn.active { background: white; color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        .cat-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .cat-btn:hover { background: white; transform: scale(1.02) translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        /* 分類按鈕緊湊化 */
+        .cat-btn { 
+            transition: all 0.2s ease; 
+            min-height: 80px;
+        }
+        .cat-btn:active { transform: scale(0.95); }
 
         .bg-blob {
             position: fixed;
             z-index: -1;
             filter: blur(80px);
-            opacity: 0.5;
+            opacity: 0.4;
             border-radius: 50%;
-            animation: float 20s infinite alternate;
-        }
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 50px) scale(1.1); }
         }
 
-        #topic-display { transition: opacity 0.3s ease; }
+        #topic-display { transition: opacity 0.2s ease; }
         .text-fade-out { opacity: 0; }
     </style>
 </head>
-<body class="p-6 md:p-12 relative">
+<body class="relative">
 
-    <div class="bg-blob w-96 h-96 bg-blue-100 -top-20 -left-20"></div>
-    <div class="bg-blob w-80 h-80 bg-pink-100 top-1/2 -right-20" style="animation-delay: -5s;"></div>
+    <div class="bg-blob w-72 h-72 bg-blue-100 -top-10 -left-10"></div>
+    <div class="bg-blob w-64 h-64 bg-pink-100 top-2/3 -right-10"></div>
 
-    <!-- 左上角固定使用說明 -->
-    <div class="fixed top-8 left-8 z-50 hidden lg:block">
-        <div class="glass p-6 rounded-[2rem] max-w-[260px]">
-            <h3 class="font-black text-slate-800 flex items-center gap-2 mb-3">
-                <span class="bg-blue-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">!</span>
-                使用說明
+    <!-- 頂部精簡導航條 -->
+    <header class="top-nav lg:px-12">
+        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
+            PSC <span class="hidden md:inline">命題說話</span>工具
+        </h1>
+        
+        <div class="glass flex gap-1 p-1 rounded-xl">
+            <button id="btn-m1" onclick="initApp(1)" class="mode-btn active">模式 1</button>
+            <button id="btn-m2" onclick="initApp(2)" class="mode-btn">模式 2</button>
+            <button id="btn-m3" onclick="initApp(3)" class="mode-btn">自定義</button>
+        </div>
+    </header>
+
+    <!-- 桌面端專用左側說明 -->
+    <div class="fixed top-24 left-8 z-50 hidden lg:block">
+        <div class="glass p-5 rounded-[2rem] max-w-[200px]">
+            <h3 class="font-black text-slate-800 text-sm mb-2 flex items-center gap-2">
+                💡 使用說明
             </h3>
-            <div class="text-xs text-slate-500 space-y-3 leading-relaxed font-bold">
-                <p><span class="text-blue-600">Step 1.</span> 選擇上方分類模式</p>
-                <p><span class="text-pink-600">Step 2.</span> 點擊卡牌翻開話題</p>
-                <p><span class="text-green-600">Step 3.</span> 點擊分類按鈕歸類</p>
+            <div class="text-[11px] text-slate-500 space-y-2 font-bold leading-tight">
+                <p>1. 選擇上方模式</p>
+                <p>2. 點擊卡牌翻開話題</p>
+                <p>3. 點擊下方按鈕歸類</p>
             </div>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
-        <!-- 網頁標題 -->
-        <h1 class="text-4xl md:text-5xl font-black text-slate-800 mb-12 tracking-tight text-center">
-            PSC <span class="text-blue-500">命題說話</span>分類工具
-        </h1>
-
-        <!-- 模式選擇 -->
-        <div class="grid grid-cols-3 gap-4 mb-12 w-full max-w-2xl text-sm md:text-base">
-            <button id="btn-m1" onclick="initApp(1)" class="mode-btn glass py-6 rounded-[2rem] text-slate-700 font-black shadow-sm border-b-4 border-transparent">分類模式 1</button>
-            <button id="btn-m2" onclick="initApp(2)" class="mode-btn glass py-6 rounded-[2rem] text-slate-700 font-black shadow-sm border-b-4 border-transparent">分類模式 2</button>
-            <button id="btn-m3" onclick="initApp(3)" class="mode-btn glass py-6 rounded-[2rem] text-slate-700 font-black shadow-sm border-b-4 border-transparent">自定義模式</button>
-        </div>
-
-        <!-- 自定義 UI：9 個欄目 -->
-        <div id="custom-ui" class="hidden glass p-8 rounded-[2.5rem] mb-12 w-full animate-fade-in border-2 border-white/50">
-            <p class="text-center text-slate-500 text-sm font-bold mb-6">請輸入類別名稱（最多 9 個，留空不顯示）</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <input type="text" placeholder="自定義 1" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 2" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 3" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 4" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 5" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 6" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 7" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 8" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <input type="text" placeholder="自定義 9" class="custom-input p-4 rounded-2xl border-none bg-white/60 outline-none shadow-inner text-center">
-                <button onclick="applyCustom()" class="col-span-full bg-slate-800 text-white py-4 rounded-2xl font-bold mt-2 shadow-xl hover:bg-black transition-all">套用自定義分類</button>
+    <main class="max-w-3xl mx-auto px-4 relative z-10 flex flex-col items-center">
+        
+        <!-- 自定義 UI -->
+        <div id="custom-ui" class="hidden glass p-4 md:p-6 rounded-3xl mb-6 w-full border-2 border-white/50 mt-4">
+            <div class="grid grid-cols-3 gap-2">
+                <input type="text" placeholder="類別1" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
+                <input type="text" placeholder="類別2" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
+                <input type="text" placeholder="類別3" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
+                <input type="text" placeholder="類別4" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
+                <input type="text" placeholder="類別5" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
+                <input type="text" placeholder="類別6" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
+                <button onclick="applyCustom()" class="col-span-full bg-slate-800 text-white py-2 rounded-lg text-sm font-bold mt-1">套用設定</button>
             </div>
         </div>
 
-        <!-- 卡牌區 -->
-        <div class="flex flex-col items-center mb-16 w-full">
-            <div class="card-container w-full max-w-[380px] h-64 group">
+        <!-- 卡牌區 (縮小垂直距離) -->
+        <div class="flex flex-col items-center w-full mt-4 md:mt-8">
+            <div class="card-container w-full max-w-[320px] h-48 md:h-56">
                 <div id="main-card" class="card-inner w-full h-full relative cursor-pointer" onclick="flipCard()">
                     <div class="card-face card-front-design">
                         <div class="text-center">
-                            <div class="text-7xl mb-4 group-hover:scale-110 transition-transform duration-500">🃏</div>
-                            <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Tap to Reveal</p>
+                            <div class="text-5xl md:text-6xl mb-2">🃏</div>
+                            <p class="text-slate-400 font-black text-[10px] tracking-widest">TAP TO REVEAL</p>
                         </div>
                     </div>
-                    <div class="card-face card-back-design px-12 text-center">
-                        <h2 id="topic-display" class="text-3xl font-black text-slate-800 leading-tight">準備中...</h2>
+                    <div class="card-face card-back-design px-6 text-center">
+                        <h2 id="topic-display" class="text-xl md:text-2xl font-black text-slate-800 leading-tight">準備中...</h2>
                     </div>
                 </div>
             </div>
             
-            <!-- 進度條 -->
-            <div class="w-full max-w-sm mt-12">
-                <div class="flex justify-between text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase">
-                    <span id="counter">Progress: 0/50</span>
+            <!-- 進度條 (精簡化) -->
+            <div class="w-full max-w-[280px] mt-6 mb-8">
+                <div class="flex justify-between text-[9px] font-black text-slate-400 mb-1 tracking-tighter">
+                    <span id="counter">PROGRESS: 0/50</span>
                     <span id="percent-text">0%</span>
                 </div>
-                <div class="h-3 w-full bg-white/40 rounded-full p-0.5 shadow-inner">
-                    <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 rounded-full transition-all duration-700" style="width: 0%"></div>
+                <div class="h-2 w-full bg-white/40 rounded-full p-0.5">
+                    <div id="progress-bar" class="h-full bg-blue-400 rounded-full transition-all duration-700" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 分類按鈕區：動態調整網格以適應長名稱 -->
-        <div id="action-zones" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full mb-16"></div>
+        <!-- 分類按鈕區 (針對手機端緊湊排列) -->
+        <div id="action-zones" class="grid grid-cols-2 md:grid-cols-3 gap-3 w-full mb-8">
+            <!-- 按鈕動態生成 -->
+        </div>
 
-        <!-- 工具欄 -->
-        <div class="flex flex-col md:flex-row justify-center items-center gap-10">
-            <button onclick="undoLast()" class="text-slate-500 hover:text-pink-600 font-bold flex items-center gap-2 transition-all">
-                <span class="text-2xl">↺</span> 放回上一張
+        <!-- 工具欄 (底端懸浮感) -->
+        <div class="flex items-center justify-between w-full max-w-[320px] px-2">
+            <button onclick="undoLast()" class="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1">
+                ↺ 放回上一張
             </button>
-            <button onclick="exportData()" class="bg-white text-slate-800 px-14 py-5 rounded-full font-black shadow-xl hover:shadow-2xl transition-all border-2 border-white/50">
-                導出分類報告 (.txt)
+            <button onclick="exportData()" class="bg-slate-800 text-white px-6 py-3 rounded-full text-xs font-black shadow-lg">
+                導出報告
             </button>
         </div>
-    </div>
+    </main>
 
     <audio id="flip-sound" preload="auto">
         <source src="https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3" type="audio/mpeg">
@@ -173,7 +189,6 @@
         let currentIndex = 0, results = {}, history = [];
         const flipSound = document.getElementById('flip-sound');
 
-        // 更新後的分類全稱
         const configs = { 
             1: ["人物", "事物", "經歷和生活", "理想和願望", "觀點和評論"], 
             2: ["個人生活", "人際關係", "學習和工作", "社會議題評論", "知識文化"] 
@@ -191,8 +206,8 @@
             categories.forEach(cat => {
                 results[cat] = [];
                 const btn = document.createElement('button');
-                btn.className = "cat-btn glass p-6 rounded-[2rem] text-slate-700 font-bold text-center flex flex-col items-center justify-center min-h-[120px]";
-                btn.innerHTML = `<div class="text-lg md:text-xl mb-1">${cat}</div><div id="cnt-${cat}" class="text-[10px] text-blue-500 font-black opacity-60">0 ITEMS</div>`;
+                btn.className = "cat-btn glass p-3 rounded-2xl text-slate-700 font-bold text-center flex flex-col items-center justify-center border-b-2 border-white";
+                btn.innerHTML = `<div class="text-sm mb-1">${cat}</div><div id="cnt-${cat}" class="text-[9px] text-blue-500 font-black opacity-60">0</div>`;
                 btn.onclick = () => classifyTo(cat);
                 container.appendChild(btn);
             });
@@ -201,9 +216,7 @@
 
         function applyCustom() {
             const cats = Array.from(document.querySelectorAll('.custom-input')).map(i => i.value.trim()).filter(v => v);
-            if(cats.length === 0) return alert("請至少填寫一個類別名稱");
-            renderButtons(cats);
-            document.getElementById('custom-ui').classList.add('hidden');
+            if(cats.length) { renderButtons(cats); document.getElementById('custom-ui').classList.add('hidden'); }
         }
 
         function flipCard() {
@@ -221,10 +234,10 @@
             if(!card.classList.contains('is-flipped') || currentIndex >= topics.length) return;
             history.push({ index: currentIndex, category: category });
             results[category].push(topics[currentIndex]);
-            document.getElementById(`cnt-${category}`).innerText = `${results[category].length} ITEMS`;
+            document.getElementById(`cnt-${category}`).innerText = results[category].length;
             currentIndex++;
             card.classList.remove('is-flipped');
-            setTimeout(() => updateTopicDisplay(), 350);
+            setTimeout(() => updateTopicDisplay(), 300);
         }
 
         function undoLast() {
@@ -232,36 +245,34 @@
             const last = history.pop();
             currentIndex = last.index;
             results[last.category].pop();
-            document.getElementById(`cnt-${last.category}`).innerText = `${results[last.category].length} ITEMS`;
+            document.getElementById(`cnt-${last.category}`).innerText = results[last.category].length;
             document.getElementById('main-card').classList.remove('is-flipped');
-            setTimeout(() => updateTopicDisplay(), 350);
+            setTimeout(() => updateTopicDisplay(), 300);
         }
 
         function updateTopicDisplay(init = false) {
             const display = document.getElementById('topic-display');
             display.classList.add('text-fade-out');
             setTimeout(() => {
-                display.innerText = currentIndex < topics.length ? topics[currentIndex] : "🎉 分類完畢！";
+                display.innerText = currentIndex < topics.length ? topics[currentIndex] : "🎉 完成";
                 display.classList.remove('text-fade-out');
             }, init ? 0 : 150);
             const p = (currentIndex / topics.length) * 100;
             document.getElementById('progress-bar').style.width = p + '%';
-            document.getElementById('counter').innerText = `Progress: ${currentIndex}/50`;
+            document.getElementById('counter').innerText = `PROGRESS: ${currentIndex}/50`;
             document.getElementById('percent-text').innerText = Math.round(p) + '%';
         }
 
         function exportData() {
-            let text = "PSC 命題說話分類報告\n====================\n\n";
+            let text = "PSC 分類報告\n" + "=".repeat(20) + "\n\n";
             for (let cat in results) {
-                text += `【${cat}】(${results[cat].length} 題):\n`;
-                text += results[cat].length ? results[cat].join('\n') : "(無內容)";
-                text += "\n\n";
+                text += `【${cat}】:\n${results[cat].length ? results[cat].join('\n') : "(空)"}\n\n`;
             }
             const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `PSC_Classification_${new Date().toLocaleDateString()}.txt`;
+            a.download = `PSC_${new Date().toLocaleDateString()}.txt`;
             a.click();
         }
 
