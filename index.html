@@ -12,29 +12,35 @@
             background: linear-gradient(135deg, #e0f2fe 0%, #fdf2f8 50%, #fff9db 100%);
             font-family: 'Noto Sans TC', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
+            color: #1e293b;
             margin: 0;
-            padding-bottom: 2rem;
+            padding-bottom: env(safe-area-inset-bottom, 2rem);
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.55);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        /* 頂部導航優化 */
-        .top-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            width: 100%;
-            z-index: 50;
+        /* 模式切換器字體加大 */
+        .mode-btn { 
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s;
+            font-weight: 800;
+            color: #475569;
+        }
+        .mode-btn.active { 
+            background: #3b82f6; 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
         }
 
-        /* 卡牌縮小優化 (手機端) */
+        /* 核心卡牌：字體加大 */
         .card-container { perspective: 1000px; }
         .card-inner {
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -43,46 +49,37 @@
         .is-flipped { transform: rotateY(180deg); }
         .card-face { 
             backface-visibility: hidden; 
-            border-radius: 1.5rem;
+            border-radius: 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
             position: absolute;
             inset: 0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 1.5rem;
         }
-        .card-front-design { background: white; border: 6px solid #ffffff; }
+        .card-front-design { background: white; border: 4px solid #3b82f6; }
         .card-back-design { 
             transform: rotateY(180deg); 
-            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-            border: 6px solid #ffffff;
+            background: #ffffff;
+            border: 4px solid #10b981;
         }
 
-        /* 模式按鈕小巧化 */
-        .mode-btn { 
-            padding: 0.5rem 0.75rem;
-            font-size: 0.75rem;
-            border-radius: 0.75rem;
-            transition: all 0.3s;
-            font-weight: 900;
-            color: #475569;
-        }
-        .mode-btn.active { background: white; color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-
-        /* 分類按鈕緊湊化 */
+        /* 分類按鈕：針對手機優化為大字體 */
         .cat-btn { 
-            transition: all 0.2s ease; 
-            min-height: 80px;
+            transition: all 0.2s ease;
+            background: white;
+            border: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            width: 100%;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
-        .cat-btn:active { transform: scale(0.95); }
-
-        .bg-blob {
-            position: fixed;
-            z-index: -1;
-            filter: blur(80px);
-            opacity: 0.4;
-            border-radius: 50%;
-        }
+        .cat-btn:active { transform: scale(0.97); background: #f8fafc; border-color: #3b82f6; }
+        .cat-name { font-size: 1.15rem; font-weight: 900; color: #1e293b; }
+        .cat-count { background: #3b82f6; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 900; }
 
         #topic-display { transition: opacity 0.2s ease; }
         .text-fade-out { opacity: 0; }
@@ -90,93 +87,81 @@
 </head>
 <body class="relative">
 
-    <div class="bg-blob w-72 h-72 bg-blue-100 -top-10 -left-10"></div>
-    <div class="bg-blob w-64 h-64 bg-pink-100 top-2/3 -right-10"></div>
-
-    <!-- 頂部精簡導航條 -->
-    <header class="top-nav lg:px-12">
-        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
-            PSC <span class="hidden md:inline">命題說話</span>工具
-        </h1>
+    <!-- 頂部固定的導航與標題 -->
+    <header class="sticky top-0 z-50 glass px-4 py-3 flex flex-col gap-3">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-black text-slate-800 tracking-tighter">
+                PSC 命題說話分類工具
+            </h1>
+            <button onclick="exportData()" class="bg-slate-800 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg">
+                導出報告
+            </button>
+        </div>
         
-        <div class="glass flex gap-1 p-1 rounded-xl">
-            <button id="btn-m1" onclick="initApp(1)" class="mode-btn active">模式 1</button>
-            <button id="btn-m2" onclick="initApp(2)" class="mode-btn">模式 2</button>
-            <button id="btn-m3" onclick="initApp(3)" class="mode-btn">自定義</button>
+        <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-xl">
+            <button id="btn-m1" onclick="initApp(1)" class="mode-btn flex-1 active">分類模式 1</button>
+            <button id="btn-m2" onclick="initApp(2)" class="mode-btn flex-1">分類模式 2</button>
+            <button id="btn-m3" onclick="initApp(3)" class="mode-btn flex-1">自定義</button>
         </div>
     </header>
 
-    <!-- 桌面端專用左側說明 -->
-    <div class="fixed top-24 left-8 z-50 hidden lg:block">
-        <div class="glass p-5 rounded-[2rem] max-w-[200px]">
-            <h3 class="font-black text-slate-800 text-sm mb-2 flex items-center gap-2">
-                💡 使用說明
-            </h3>
-            <div class="text-[11px] text-slate-500 space-y-2 font-bold leading-tight">
-                <p>1. 選擇上方模式</p>
-                <p>2. 點擊卡牌翻開話題</p>
-                <p>3. 點擊下方按鈕歸類</p>
-            </div>
-        </div>
-    </div>
-
-    <main class="max-w-3xl mx-auto px-4 relative z-10 flex flex-col items-center">
+    <main class="max-w-2xl mx-auto px-4 pt-6 pb-12 flex flex-col items-center">
         
         <!-- 自定義 UI -->
-        <div id="custom-ui" class="hidden glass p-4 md:p-6 rounded-3xl mb-6 w-full border-2 border-white/50 mt-4">
+        <div id="custom-ui" class="hidden glass p-5 rounded-3xl mb-6 w-full border-2 border-white mt-2">
+            <p class="text-center text-xs font-bold text-slate-500 mb-4 text-xs">輸入類別後點擊下方「套用」</p>
             <div class="grid grid-cols-3 gap-2">
-                <input type="text" placeholder="類別1" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
-                <input type="text" placeholder="類別2" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
-                <input type="text" placeholder="類別3" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
-                <input type="text" placeholder="類別4" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
-                <input type="text" placeholder="類別5" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
-                <input type="text" placeholder="類別6" class="custom-input p-2 text-sm rounded-lg bg-white/60 outline-none text-center">
-                <button onclick="applyCustom()" class="col-span-full bg-slate-800 text-white py-2 rounded-lg text-sm font-bold mt-1">套用設定</button>
+                <input type="text" placeholder="類別1" class="custom-input p-3 text-sm rounded-xl bg-white border border-slate-200 outline-none text-center">
+                <input type="text" placeholder="類別2" class="custom-input p-3 text-sm rounded-xl bg-white border border-slate-200 outline-none text-center">
+                <input type="text" placeholder="類別3" class="custom-input p-3 text-sm rounded-xl bg-white border border-slate-200 outline-none text-center">
+                <input type="text" placeholder="類別4" class="custom-input p-3 text-sm rounded-xl bg-white border border-slate-200 outline-none text-center">
+                <input type="text" placeholder="類別5" class="custom-input p-3 text-sm rounded-xl bg-white border border-slate-200 outline-none text-center">
+                <input type="text" placeholder="類別6" class="custom-input p-3 text-sm rounded-xl bg-white border border-slate-200 outline-none text-center">
+                <button onclick="applyCustom()" class="col-span-full bg-blue-600 text-white py-3 rounded-xl font-black mt-2">套用設定</button>
             </div>
         </div>
 
-        <!-- 卡牌區 (縮小垂直距離) -->
-        <div class="flex flex-col items-center w-full mt-4 md:mt-8">
-            <div class="card-container w-full max-w-[320px] h-48 md:h-56">
-                <div id="main-card" class="card-inner w-full h-full relative cursor-pointer" onclick="flipCard()">
+        <!-- 核心話題展示區 -->
+        <div class="w-full mb-8">
+            <div class="card-container w-full h-44 md:h-52 mb-6">
+                <div id="main-card" class="card-inner w-full h-full relative" onclick="flipCard()">
                     <div class="card-face card-front-design">
                         <div class="text-center">
-                            <div class="text-5xl md:text-6xl mb-2">🃏</div>
-                            <p class="text-slate-400 font-black text-[10px] tracking-widest">TAP TO REVEAL</p>
+                            <span class="text-4xl mb-2 block">👆</span>
+                            <p class="text-blue-600 font-black text-sm tracking-widest uppercase">點擊翻開話題</p>
                         </div>
                     </div>
-                    <div class="card-face card-back-design px-6 text-center">
-                        <h2 id="topic-display" class="text-xl md:text-2xl font-black text-slate-800 leading-tight">準備中...</h2>
+                    <div class="card-face card-back-design">
+                        <h2 id="topic-display" class="text-2xl md:text-3xl font-black text-slate-800 leading-tight text-center">準備中...</h2>
                     </div>
                 </div>
             </div>
             
-            <!-- 進度條 (精簡化) -->
-            <div class="w-full max-w-[280px] mt-6 mb-8">
-                <div class="flex justify-between text-[9px] font-black text-slate-400 mb-1 tracking-tighter">
-                    <span id="counter">PROGRESS: 0/50</span>
+            <!-- 進度條 -->
+            <div class="w-full px-2">
+                <div class="flex justify-between text-[11px] font-black text-slate-500 mb-2">
+                    <span id="counter">進度：0 / 50</span>
                     <span id="percent-text">0%</span>
                 </div>
-                <div class="h-2 w-full bg-white/40 rounded-full p-0.5">
-                    <div id="progress-bar" class="h-full bg-blue-400 rounded-full transition-all duration-700" style="width: 0%"></div>
+                <div class="h-3 w-full bg-white/50 rounded-full p-0.5">
+                    <div id="progress-bar" class="h-full bg-blue-500 rounded-full transition-all duration-700" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 分類按鈕區 (針對手機端緊湊排列) -->
-        <div id="action-zones" class="grid grid-cols-2 md:grid-cols-3 gap-3 w-full mb-8">
-            <!-- 按鈕動態生成 -->
+        <!-- 類別選擇區：字體特大化 -->
+        <div class="w-full space-y-3 mb-10">
+            <p class="text-center text-slate-400 font-bold text-xs uppercase tracking-widest mb-2">— 請選擇分類項目 —</p>
+            <div id="action-zones" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- 按鈕動態生成 -->
+            </div>
         </div>
 
-        <!-- 工具欄 (底端懸浮感) -->
-        <div class="flex items-center justify-between w-full max-w-[320px] px-2">
-            <button onclick="undoLast()" class="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1">
-                ↺ 放回上一張
-            </button>
-            <button onclick="exportData()" class="bg-slate-800 text-white px-6 py-3 rounded-full text-xs font-black shadow-lg">
-                導出報告
-            </button>
-        </div>
+        <!-- 放回功能 -->
+        <button onclick="undoLast()" class="flex items-center gap-2 text-slate-500 font-bold py-2 px-6 rounded-full hover:bg-white transition-all text-sm mb-12">
+            <span>↺</span> 放回上一張 (撤銷)
+        </button>
+
     </main>
 
     <audio id="flip-sound" preload="auto">
@@ -206,8 +191,8 @@
             categories.forEach(cat => {
                 results[cat] = [];
                 const btn = document.createElement('button');
-                btn.className = "cat-btn glass p-3 rounded-2xl text-slate-700 font-bold text-center flex flex-col items-center justify-center border-b-2 border-white";
-                btn.innerHTML = `<div class="text-sm mb-1">${cat}</div><div id="cnt-${cat}" class="text-[9px] text-blue-500 font-black opacity-60">0</div>`;
+                btn.className = "cat-btn";
+                btn.innerHTML = `<span class="cat-name">${cat}</span><span id="cnt-${cat}" class="cat-count">0</span>`;
                 btn.onclick = () => classifyTo(cat);
                 container.appendChild(btn);
             });
@@ -254,12 +239,12 @@
             const display = document.getElementById('topic-display');
             display.classList.add('text-fade-out');
             setTimeout(() => {
-                display.innerText = currentIndex < topics.length ? topics[currentIndex] : "🎉 完成";
+                display.innerText = currentIndex < topics.length ? topics[currentIndex] : "🎉 分類完成";
                 display.classList.remove('text-fade-out');
             }, init ? 0 : 150);
             const p = (currentIndex / topics.length) * 100;
             document.getElementById('progress-bar').style.width = p + '%';
-            document.getElementById('counter').innerText = `PROGRESS: ${currentIndex}/50`;
+            document.getElementById('counter').innerText = `進度：${currentIndex} / 50`;
             document.getElementById('percent-text').innerText = Math.round(p) + '%';
         }
 
@@ -272,7 +257,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `PSC_${new Date().toLocaleDateString()}.txt`;
+            a.download = `PSC_Report_${new Date().toLocaleDateString()}.txt`;
             a.click();
         }
 
