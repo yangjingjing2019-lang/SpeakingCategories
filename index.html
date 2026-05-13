@@ -25,12 +25,10 @@
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
         }
 
-        /* 歡迎頁面動畫 */
         #welcome-screen {
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
         }
 
-        /* 模式按鈕 */
         .mode-btn { 
             padding: 0.6rem 1rem;
             font-size: 0.85rem;
@@ -45,7 +43,6 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); 
         }
 
-        /* 卡片美化設計 */
         .card-container { perspective: 1200px; }
         .card-inner {
             transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -74,7 +71,6 @@
             border: 6px solid #10b981;
         }
 
-        /* 分類按鈕 */
         .cat-btn { 
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             background: white;
@@ -102,42 +98,34 @@
 </head>
 <body>
 
-    <!-- 1. 使用方法說明頁面 -->
     <div id="welcome-screen" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-50/90 backdrop-blur-md">
         <div class="glass max-w-md w-full p-8 rounded-[2.5rem] text-center border-2 border-indigo-100">
-            <div class="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-xl shadow-indigo-200">
-                📚
-            </div>
+            <div class="w-20 h-20 bg-indigo-600 text-white rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-xl shadow-indigo-200">✨</div>
             <h2 class="text-2xl font-black text-slate-800 mb-4 tracking-tight">【命題說話分類助手】 使用說明</h2>
             <div class="text-left space-y-4 mb-8 text-slate-600 font-medium">
                 <div class="flex gap-3">
                     <span class="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                    <p>選擇適合的<b>分類模式</b>（包含自定義功能）。</p>
+                    <p>選擇適合的<b>分類模式</b>。</p>
                 </div>
                 <div class="flex gap-3">
                     <span class="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                    <p>點擊中央彩色卡牌<b>翻開話題</b>，閱讀內容。</p>
+                    <p>點擊彩色卡牌<b>閱讀話題</b>並分類。</p>
                 </div>
                 <div class="flex gap-3">
                     <span class="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                    <p>點擊下方的<b>分類按鈕</b>，將話題歸類，最後<b>導出分類報告</b>。</p>
+                    <p>最後<b>導出報告</b>完成分類。</p>
                 </div>
             </div>
-            <button onclick="closeWelcome()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-indigo-700 transition-all">
+            <button onclick="initAudioAndClose()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-indigo-700 transition-all">
                 開始分類之旅
             </button>
         </div>
     </div>
 
-    <!-- 2. 主程式內容 -->
     <header class="sticky top-0 z-50 glass px-4 py-3 flex flex-col gap-3">
         <div class="flex justify-between items-center">
-            <h1 class="text-xl font-black text-indigo-900 tracking-tighter flex items-center gap-2">
-                PSC 命題說話
-            </h1>
-            <button onclick="exportData()" class="bg-slate-800 text-white px-5 py-2 rounded-full text-xs font-black shadow-lg active:scale-95 transition-all">
-                導出報告
-            </button>
+            <h1 class="text-xl font-black text-indigo-900 tracking-tighter flex items-center gap-2">PSC 命題說話</h1>
+            <button onclick="exportData()" class="bg-slate-800 text-white px-5 py-2 rounded-full text-xs font-black shadow-lg active:scale-95 transition-all">導出報告</button>
         </div>
         <div class="flex justify-center gap-1 bg-slate-200/50 p-1 rounded-xl">
             <button id="btn-m1" onclick="initApp(1)" class="mode-btn flex-1 active">模式 1</button>
@@ -147,20 +135,15 @@
     </header>
 
     <main class="max-w-2xl mx-auto px-4 pt-6 pb-12">
-        
-        <!-- 自定義 UI：預設 6 欄 -->
         <div id="custom-ui" class="hidden glass p-6 rounded-[2rem] mb-6 border-2 border-indigo-200">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-black text-indigo-900">設置自選類別</h3>
                 <button onclick="addInputRow('')" class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold">+ 添加欄目</button>
             </div>
-            <div id="custom-inputs-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 max-h-64 overflow-y-auto pr-2">
-                <!-- JavaScript 動態生成 -->
-            </div>
+            <div id="custom-inputs-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 max-h-64 overflow-y-auto pr-2"></div>
             <button onclick="applyCustom()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black shadow-md">套用設定</button>
         </div>
 
-        <!-- 卡牌展示區 -->
         <div class="w-full mb-10">
             <div class="card-container w-full h-52 md:h-64 mb-8">
                 <div id="main-card" class="card-inner w-full h-full relative" onclick="flipCard()">
@@ -170,7 +153,6 @@
                                 <span class="text-3xl">🔀</span>
                             </div>
                             <p class="font-black text-lg tracking-widest">點擊翻開話題</p>
-                            <p class="text-white/60 text-xs mt-1 font-bold uppercase">Tap to Flip</p>
                         </div>
                     </div>
                     <div class="card-face card-back-design">
@@ -179,7 +161,6 @@
                 </div>
             </div>
             
-            <!-- 進度條 -->
             <div class="w-full px-4">
                 <div class="flex justify-between text-[11px] font-black text-slate-400 mb-2 uppercase tracking-widest">
                     <span id="counter">Progress: 0 / 50</span>
@@ -191,26 +172,15 @@
             </div>
         </div>
 
-        <!-- 按鈕區 -->
         <div class="w-full space-y-3 mb-10">
             <div id="action-zones" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-            <button id="edit-custom-btn" onclick="document.getElementById('custom-ui').classList.toggle('hidden')" class="hidden w-full py-3 border-2 border-dashed border-indigo-200 rounded-2xl text-indigo-400 font-black text-sm hover:bg-indigo-50 transition-all">
-                ✎ 重新管理分類欄目
-            </button>
+            <button id="edit-custom-btn" onclick="document.getElementById('custom-ui').classList.toggle('hidden')" class="hidden w-full py-3 border-2 border-dashed border-indigo-200 rounded-2xl text-indigo-400 font-black text-sm hover:bg-indigo-50 transition-all">✎ 重新管理分類欄目</button>
         </div>
 
         <div class="flex justify-center">
-            <button onclick="undoLast()" class="flex items-center gap-2 text-slate-400 font-bold py-2 px-6 rounded-full hover:bg-white hover:text-slate-600 transition-all text-sm">
-                <span>↺</span> 撤銷上一步
-            </button>
+            <button onclick="undoLast()" class="flex items-center gap-2 text-slate-400 font-bold py-2 px-6 rounded-full hover:bg-white hover:text-slate-600 transition-all text-sm"><span>↺</span> 撤銷上一步</button>
         </div>
-
     </main>
-
-    <!-- 輕干擾音效：紙張翻動聲 -->
-    <audio id="flip-sound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/147/147-preview.mp3" type="audio/mpeg">
-    </audio>
 
     <script>
         const topics = ["1. 我的一天","2.老師","3.珍貴的禮物","4.假日生活","5.我喜愛的植物","6.我的理想（或願望）","7.過去的一年","8.朋友","9.童年生活","10.我的興趣愛好","11.家鄉（或熟悉的地方）","12.我喜歡的季節（或天氣）","13.印象深刻的書籍（或報刊）","14.難忘的旅行","15.我喜歡的美食","16.我所在的學校（或公司、團隊、其他機構）","17.尊敬的人","18.我喜愛的動物","19.我瞭解的地域文化（或風俗）","20.體育運動的樂趣","21.讓我快樂的事情","22.我喜歡的節日","23.我欣賞的歷史人物","24.勞動的體會","25.我喜歡的職業（或專業）","26.嚮往的地方","27.讓我感動的事情","28.我喜愛的藝術形式","29.我瞭解的十二生肖","30.學習普通話（或其他語言）的體會","31.家庭對個人成長的影響","32.生活中的誠信","33.談服飾","34.自律與我","35.對終身學習的看法","36.談談衛生與健康","37.對環境保護的認識","38.談社會公德（或職業道德）","39.對團隊精神的理解","40.談中國傳統文化","41.科技發展與社會生活","42.談個人修養","43.對幸福的理解","44.如何保持良好的心態","45.對垃圾分類的認識","46.網絡時代的生活","47.對美的看法","48.談傳統美德","49.對親情（或友情、愛情）的理解","50. 小家、大家與國家"];
@@ -218,8 +188,36 @@
         let currentIndex = 0, results = {}, history = [];
         let customCategories = ["類別1", "類別2", "類別3", "類別4", "類別5", "類別6"];
         
-        const flipSound = document.getElementById('flip-sound');
-        flipSound.volume = 0.3; // 設置音量為 30%
+        let audioCtx = null;
+        function initAudioAndClose() {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            playChimeSound(true); // 靜音激活音頻上下文
+            closeWelcome();
+        }
+
+        // --- 更換為：清脆鈴聲音效 ---
+        function playChimeSound(isSilent = false) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine'; // 正弦波最清脆
+            osc.frequency.setValueAtTime(880, now); // A5 音高
+            osc.frequency.exponentialRampToValueAtTime(440, now + 0.5);
+
+            gain.gain.setValueAtTime(isSilent ? 0 : 0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.5);
+        }
 
         function closeWelcome() {
             const screen = document.getElementById('welcome-screen');
@@ -237,7 +235,6 @@
             document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', i+1 === modeId));
             const isCustom = modeId === 3;
             document.getElementById('edit-custom-btn').classList.toggle('hidden', !isCustom);
-            
             if(isCustom) {
                 renderCustomInputs();
                 renderButtons(customCategories);
@@ -257,10 +254,8 @@
             const list = document.getElementById('custom-inputs-list');
             const div = document.createElement('div');
             div.className = "input-row";
-            div.innerHTML = `
-                <input type="text" value="${value}" placeholder="欄目名稱" class="custom-input flex-1 bg-transparent outline-none text-sm font-bold text-slate-700">
-                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500">✕</button>
-            `;
+            div.innerHTML = `<input type="text" value="${value}" placeholder="欄目名稱" class="custom-input flex-1 bg-transparent outline-none text-sm font-bold text-slate-700">
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500">✕</button>`;
             list.appendChild(div);
         }
 
@@ -291,8 +286,7 @@
             if(currentIndex < topics.length) {
                 const card = document.getElementById('main-card');
                 if(!card.classList.contains('is-flipped')) {
-                    flipSound.currentTime = 0;
-                    flipSound.play();
+                    playChimeSound(); // 播放鈴聲
                     card.classList.add('is-flipped');
                 }
             }
@@ -301,11 +295,10 @@
         function classifyTo(category) {
             const card = document.getElementById('main-card');
             if(!card.classList.contains('is-flipped') || currentIndex >= topics.length) return;
-            
             history.push({ index: currentIndex, category: category });
             results[category].push(topics[currentIndex]);
-            document.getElementById(`cnt-${category}`).innerText = results[category].length;
-            
+            const badge = document.getElementById(`cnt-${category}`);
+            if(badge) badge.innerText = results[category].length;
             currentIndex++;
             card.classList.remove('is-flipped');
             setTimeout(() => updateTopicDisplay(), 350);
@@ -341,9 +334,8 @@
                 text += `【${cat}】(${results[cat].length}項):\r\n${results[cat].length ? results[cat].join('\r\n') : "(空)"}\r\n\r\n`;
             }
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
+            a.href = URL.createObjectURL(blob);
             a.download = `PSC_分類報告_${new Date().toLocaleDateString()}.txt`;
             a.click();
         }
